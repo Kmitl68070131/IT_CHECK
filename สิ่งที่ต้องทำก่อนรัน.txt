@@ -1,0 +1,3 @@
+- เปิด Anaconda Prompt("https://docs.conda.io/en/latest/miniconda.html")
+- รัน: conda activate face_recognition
+- รัน: pip install opencv-contrib-python==4.8.1.78
