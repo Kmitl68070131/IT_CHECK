@@ -18,7 +18,7 @@ def create_dataset_folder(student_id):
     path = f"dataset/{student_id}"
     if not os.path.exists(path):
         os.makedirs(path)
-        return path
+    return path
 
 def capture_face():
     conn = init_database()
@@ -27,7 +27,7 @@ def capture_face():
         print("Error : ไม่สามารถเปิดกล้องได้")
         return
 
-    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_fromtalface_default.xml')
+    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
     # เก็บข้อมูลนักเรียน
     while True:
@@ -38,7 +38,7 @@ def capture_face():
 
     # ตรวจสอบว่ามีรหัสนักศึกษาแล้วรึยัง
         cursor = conn.cursor()
-        cursor.excute("เลือกชื่อจากนักเรียน จาก student_id = ?" , (student_id,))
+        cursor.execute("SELECT name FROM students WHERE student_id = ?", (student_id,))
         existing_student = cursor.fetchone()
 
         if existing_student:
@@ -51,7 +51,7 @@ def capture_face():
                     continue
 
                 # อัพเดทข้อมูลของนักเรียน
-                conn.execute("UPDATE students SET name = ?, register_date = ? WHERE student_id = ?"
+                conn.execute("UPDATE students SET name = ?, register_date = ? WHERE student_id = ?",
                              (name, datetime.now().date(),student_id))
                 conn.commit()
 
@@ -70,7 +70,7 @@ def capture_face():
                     continue
 
             #เพิ่มนักเรียนใหม่
-            conn.execute("INSERT INTO students (student_id, name, register_date) VALUES (?, ?, ?)"
+            conn.execute("INSERT INTO students (student_id, name, register_date) VALUES (?, ?, ?)",
                          (student_id, name, datetime.now().date()))
             conn.commit()
             break
@@ -86,7 +86,7 @@ def capture_face():
             print("ไม่สามารถตรวจจับใบหน้าได้ โปรดลองใหม่อีกครั้ง")
             break
 
-        gray = cv2.cvtColor(frame, cv2.COLOR_BAYER_BG2BGR)
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         faces = face_cascade.detectMultiScale(gray,1.5,6)
 
         # ทำกรอบสีเหลี่มสำหรับตรวจใบหน้า + ข้อความ
@@ -136,7 +136,7 @@ def capture_face():
     else:
         print(f"Captured {count} images before exiting")
 
-    if __name__ == "__main__":
-        if not os.path.exists("dataset"):
-            os.makedirs("dataset")
-        capture_face()
+if __name__ == "__main__":
+    if not os.path.exists("dataset"):
+        os.makedirs("dataset")
+    capture_face()
