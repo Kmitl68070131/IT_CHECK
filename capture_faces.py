@@ -31,9 +31,9 @@ def capture_face():
 
     # เก็บข้อมูลนักเรียน
     while True:
-        student_id = input("Enter STUDENT ID : ").strip()
+        student_id = input("รหัสนักศึกษา : ").strip()
         if not student_id:
-            print("Error: โปรดกรอกรหัสนักศึกษา")
+            print("Error: กรอกรหัสนักศึกษา")
             continue
 
     # ตรวจสอบว่ามีรหัสนักศึกษาแล้วรึยัง
@@ -83,7 +83,7 @@ def capture_face():
     while count < 20:
         ret, frame = cap.read()
         if not ret:
-            print("ไม่สามารถตรวจจับใบหน้าได้ โปรดลองใหม่อีกครั้ง")
+            print("Unable to detect face. Please try again.")
             break
 
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -92,10 +92,10 @@ def capture_face():
         # ทำกรอบสีเหลี่มสำหรับตรวจใบหน้า + ข้อความ
         for (x,y,w,h) in faces:
             cv2.rectangle(frame, (x,y), (x+w,y+h), (255,0,0),2)
-            cv2.putText(frame, f"ตรวจพบใบหน้า! กด 'c' เพื่อถ่าย", (x, y-10), 
+            cv2.putText(frame, f"Face detected! Press 'c' to capture", (x, y-10), 
                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
             
-        cv2.imshow("กำลังจับใบหน้า", frame)
+        cv2.imshow("Capture face", frame)
         key = cv2.waitKey(1) & 0xFF
         if key == ord('c'):
             if len(faces) > 0:
@@ -119,11 +119,11 @@ def capture_face():
                     print(f"Captured image {count+1}/20 - Saved to {img_path}")  # Changed from 10 to 20
                     count += 1
                     if count < 20: # จำนวนรูปที่จะถ่าย
-                        print(f"Press 'c' to capture ({20-count} remaining)")  # Changed from 10 to 20
+                        print(f"กด 'c' เพื่อถ่ายรูปใบหน้า ({20-count} เหลือ)")  # Changed from 10 to 20
                 else:
                     print("Error: Could not save image")
             else:
-                print("No face detected! Please try again")
+                print("ไม่พบใบหน้า!! โปรดลองใหม่อีกครั้ง")
 
         elif key == ord('q'):
             break
@@ -132,9 +132,9 @@ def capture_face():
     cv2.destroyAllWindows()
 
     if count == 20: # จำนวนรูปที่จะถ่าย
-        print("Successfully captured all 20 images!") # จำนวนรูปที่จะถ่าย
+        print("จับภาพครบทั้ง 20 ภาพเรียบร้อยแล้ว!!") # จำนวนรูปที่จะถ่าย
     else:
-        print(f"Captured {count} images before exiting")
+        print(f"จับภาพ {count} ภาพก่อนออก")
 
 if __name__ == "__main__":
     if not os.path.exists("dataset"):
