@@ -47,7 +47,7 @@ def capture_face():
             if choice == 'y':
                 name = input("กรอกชื่อนักเรียนใหม่ : ").strip()
                 if not name:
-                    print("Error: โปรดกรอกรหัสนักศึกษา")
+                    print("Error: โปรดกรอกชื่อ")
                     continue
 
                 # อัพเดทข้อมูลของนักเรียน
@@ -66,7 +66,7 @@ def capture_face():
         else:
             name = input("กรอกชื่อของนักเรียน : ").strip()
             if not name:
-                    print("Error: โปรดกรอกรหัสนักศึกษา")
+                    print("Error: โปรดกรอกชื่อ")
                     continue
 
             #เพิ่มนักเรียนใหม่
