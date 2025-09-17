@@ -43,4 +43,90 @@ def capture_face():
 
         if existing_student:
             print(f"รหัสนักศึกษา {student_id} มีอยู่แล้ว ชื่อ : {existing_student[0]}")
-            choice = input("")
+            choice = input("คุณต้องการอัปเดตข้อมูลของนักเรียนคนนี้ไหม ? (y/n): ").lower()
+            if choice == 'y':
+                name = input("กรอกชื่อนักเรียนใหม่ : ").strip()
+                if not name:
+                    print("Error: โปรดกรอกรหัสนักศึกษา")
+                    continue
+
+                # อัพเดทข้อมูลของนักเรียน
+                conn.execute("UPDATE students SET name = ?, register_date = ? WHERE student_id = ?"
+                             (name, datetime.now().date(),student_id))
+                conn.commit()
+
+                # ลบข้อมูลเก่าของนักเรียนที่อัพเดท
+                dataset_path = f"dataset/{student_id}"
+                if os.path.exists(dataset_path):
+                    for file in os.listdir(dataset_path):
+                        os.remove(os.path.join(dataset_path, file))
+                break
+            else:
+                continue
+        else:
+            name = input("กรอกชื่อของนักเรียน : ").strip()
+            if not name:
+                    print("Error: โปรดกรอกรหัสนักศึกษา")
+                    continue
+
+            #เพิ่มนักเรียนใหม่
+            conn.execute("INSERT INTO students (student_id, name, register_date) VALUES (?, ?, ?)"
+                         (student_id, name, datetime.now().date()))
+            conn.commit()
+            break
+
+    dataset_path = create_dataset_folder(student_id)
+    print(f"กด 'c' เพื่อถ่ายรูปใบหน้า (เหลืออีก 20 )")
+    print("กด 'q' เพื่อออก")
+
+    count = 0
+    while count < 20:
+        ret, frame = cap.read()
+        if not ret:
+            print("ไม่สามารถตรวจจับใบหน้าได้ โปรดลองใหม่อีกครั้ง")
+            break
+
+        gray = cv2.cvtColor(frame, cv2.COLOR_BAYER_BG2BGR)
+        faces = face_cascade.detectMultiScale(gray,1.5,6)
+
+        # ทำกรอบสีเหลี่มสำหรับตรวจใบหน้า + ข้อความ
+        for (x,y,w,h) in faces:
+            cv2.rectangle(frame, (x,y), (x+w,y+h), (255,0,0),2)
+            cv2.putText(frame, f"ตรวจพบใบหน้า! กด 'c' เพื่อถ่าย", (x, y-10), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+            
+        cv2.imshow("กำลังจับใบหน้า", frame)
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('c'):
+            if len(faces) > 0:
+                x,y,w,h = faces[0] # จับใบหน้าครั้งแรก
+            
+                # ขนาดกรอบสำหรับรูป
+                margin_x = int(w * 0.5)
+                margin_y = int(h * 0.5)
+                # คำนวณพื้นที่ใหม่โดยเพิ่มขอบ
+                x1 = max(0, x - margin_x)
+                y1 = max(0, y - margin_y)
+                x2 = min(frame.shape[1], x + w + margin_x)
+                y2 = min(frame.shape[0], y + h + margin_y)
+
+                # ตัดภาพใบหน้าพร้อมขอบ
+                face_img = frame[y1:y2,x1:x2]
+
+                # บันทึกภาพ
+                img_path = os.path.join(dataset_path, f"{student_id}_{count}.jpg")
+                if cv2.imwrite(img_path, face_img):
+                    print(f"Captured image {count+1}/20 - Saved to {img_path}")  # Changed from 10 to 20
+                    count += 1
+                    if count < 20:  # Changed from 10 to 20
+                        print(f"Press 'c' to capture ({20-count} remaining)")  # Changed from 10 to 20
+                else:
+                    print("Error: Could not save image")
+            else:
+                print("No face detected! Please try again")
+
+        elif key == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
